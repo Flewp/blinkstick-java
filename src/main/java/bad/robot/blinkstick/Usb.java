@@ -36,24 +36,36 @@ public class Usb {
 	}
 
 	public static Optional<BlinkStick> findFirstBlinkStick() {
+		return findFirstBlinkStick(true);
+	}
+
+	public static Optional<BlinkStick> findFirstBlinkStick(boolean rateLimit) {
 		return findAllBlinkStickDevices()
 			.stream()
 			.findFirst()
-			.map(Usb::createBlinkStick);
+			.map(hidDeviceInfo -> createBlinkStick(hidDeviceInfo, rateLimit));
 	}
 
 	public static Optional<BlinkStick> findBlinkStickBy(String serial) {
+		return findBlinkStickBy(serial, true);
+	}
+
+	public static Optional<BlinkStick> findBlinkStickBy(String serial, boolean rateLimit) {
 		return findAllBlinkStickDevices()
 			.stream()
 			.filter(info -> info.getSerial_number().equals(serial))
-			.map(Usb::createBlinkStick)
+			.map(hidDeviceInfo -> createBlinkStick(hidDeviceInfo, rateLimit))
 			.findFirst();
 	}
 
 	public static List<BlinkStick> findAllBlinkSticks() {
+		return findAllBlinkSticks(true);
+	}
+
+	public static List<BlinkStick> findAllBlinkSticks(boolean rateLimit) {
 		return findAllBlinkStickDevices()
-			.stream()
-			.map(Usb::createBlinkStick)
+            .stream()
+			.map(hidDeviceInfo -> createBlinkStick(hidDeviceInfo, rateLimit))
 			.collect(toList());
 	}
 
@@ -73,12 +85,16 @@ public class Usb {
 			.collect(toList());
 	}
 
-	private static BlinkStick createBlinkStick(HIDDeviceInfo info) {
+	private static BlinkStick createBlinkStick(HIDDeviceInfo info, boolean rateLimit) {
 		try {
 			HIDDevice device = Optional.ofNullable(info.open()).orElseThrow(() ->
 				new NullPointerException("Failed to open USB device, the native open() method returned null. Could be a OS/driver issue, check your library path. Otherwise, I have no idea.")
 			);
-			CodemindersApiBlinkStick blinkStick = new CodemindersApiBlinkStick(device);
+
+			BlinkStick blinkStick = rateLimit ?
+				new RateLimitedBlinkStick(new CodemindersApiBlinkStick(device)).createProxy() :
+				new CodemindersApiBlinkStick(device);
+
 			return blinkStick;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
