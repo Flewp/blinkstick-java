@@ -78,8 +78,8 @@ public class Usb {
 			HIDDevice device = Optional.ofNullable(info.open()).orElseThrow(() ->
 				new NullPointerException("Failed to open USB device, the native open() method returned null. Could be a OS/driver issue, check your library path. Otherwise, I have no idea.")
 			);
-			RateLimitedBlinkStick rateLimitedStick = new RateLimitedBlinkStick(new CodemindersApiBlinkStick(device));
-			return rateLimitedStick.createProxy();
+			CodemindersApiBlinkStick blinkStick = new CodemindersApiBlinkStick(device);
+			return blinkStick;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
