@@ -24,11 +24,11 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @param b blue byte color value 0..255
 	 */
 	@Override
-	public void setColor(int r, int g, int b) {
+	public void setColor(int r, int g, int b) throws BlinkstickException {
 		try {
 			device.sendFeatureReport(new byte[]{1, (byte) r, (byte) g, (byte) b});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+            throw new BlinkstickException("Unable to set color", e);
 		}
 	}
 
@@ -42,11 +42,11 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @param b       blue byte color value 0..255
 	 */
 	@Override
-	public void setIndexedColor(int channel, int index, int r, int g, int b) {
+	public void setIndexedColor(int channel, int index, int r, int g, int b) throws BlinkstickException {
 		try {
 			device.sendFeatureReport(new byte[]{5, (byte) channel, (byte) index, (byte) r, (byte) g, (byte) b});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+            throw new BlinkstickException("Unable to set indexed color", e);
 		}
 	}
 
@@ -58,7 +58,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @param value   color as int
 	 */
 	@Override
-	public void setIndexedColor(int channel, int index, int value) {
+	public void setIndexedColor(int channel, int index, int value) throws BlinkstickException {
 		int r = (value >> 16) & 0xFF;
 		int g = (value >> 8) & 0xFF;
 		int b = value & 0xFF;
@@ -73,7 +73,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @param color color as int
 	 */
 	@Override
-	public void setIndexedColor(int index, Color color) {
+	public void setIndexedColor(int index, Color color) throws BlinkstickException {
 		setIndexedColor(0, index, color.getRed(), color.getGreen(), color.getBlue());
 	}
 
@@ -84,7 +84,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 */
 	// TODO check against Android API
 	@Override
-	public void setColor(int value) {
+	public void setColor(int value) throws BlinkstickException {
 		int r = (value >> 16) & 0xFF;
 		int g = (value >> 8)  & 0xFF;
 		int b =  value        & 0xFF;
@@ -93,18 +93,18 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	}
 
 	@Override
-	public void setColor(Color color) {
+	public void setColor(Color color) throws BlinkstickException {
 		setColor(color.rgb());
 	}
 
 	@Override
-	public void setRandomColor() {
+	public void setRandomColor() throws BlinkstickException {
 		Random random = new Random();
 		setColor(random.nextInt(256), random.nextInt(256), random.nextInt(256));
 	}
 
 	@Override
-	public void turnOff() {
+	public void turnOff() throws BlinkstickException {
 		setColor(0, 0, 0);
 	}
 
@@ -132,7 +132,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 *
 	 * @param id InfoBlock id, should be 1 or 2 as only supported info blocks
 	 */
-	private String getInfoBlock(int id) {
+	private String getInfoBlock(int id) throws BlinkstickException {
 		byte[] data = new byte[33];
 		data[0] = (byte) (id + 1);
 
@@ -149,7 +149,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 				}
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+            throw new BlinkstickException("Unable to get info block id: " + id, e);
 		}
 
 		return result;
@@ -161,7 +161,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @return The value of info block 1
 	 */
 	@Override
-	public String getInfoBlock1() {
+	public String getInfoBlock1() throws BlinkstickException {
 		return getInfoBlock(1);
 	}
 
@@ -171,11 +171,11 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @return The value of info block 2
 	 */
 	@Override
-	public String getInfoBlock2() {
+	public String getInfoBlock2() throws BlinkstickException {
 		return getInfoBlock(2);
 	}
 
-	private void setInfoBlock(int id, String value) {
+	private void setInfoBlock(int id, String value) throws BlinkstickException {
 		if (id < 1 || id > 2) throw new IllegalArgumentException("BlinkStick devices supports setting user strings for InfoBlock 1 or 2 as only");
 
 		char[] charArray = value.toCharArray();
@@ -193,17 +193,17 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 		try {
 			device.sendFeatureReport(data);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+            throw new BlinkstickException("Unable to set info block: " + value, e);
 		}
 	}
 
 	@Override
-	public void setInfoBlock1(String value) {
+	public void setInfoBlock1(String value) throws BlinkstickException {
 		setInfoBlock(1, value);
 	}
 
 	@Override
-	public void setInfoBlock2(String value) {
+	public void setInfoBlock2(String value) throws BlinkstickException {
 		setInfoBlock(2, value);
 	}
 
@@ -287,7 +287,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @param colorData Report data must be a byte array in the following format: [g0, r0, b0, g1, r1, b1, g2, r2, b2 ...]
 	 */
 	@Override
-	public void setColors(byte[] colorData) {
+	public void setColors(byte[] colorData) throws BlinkstickException {
 		setColors(Channel.R, colorData);
 	}
 
@@ -298,7 +298,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 	 * @param colorData Report data must be a byte array in the following format: [g0, r0, b0, g1, r1, b1, g2, r2, b2 ...]
 	 */
 	@Override
-	public void setColors(Channel channel, byte[] colorData) {
+	public void setColors(Channel channel, byte[] colorData) throws BlinkstickException {
 		byte leds = determineMaxLeds(colorData.length);
 		byte[] data = new byte[leds * 3 + 2];
 
@@ -316,22 +316,22 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 		try {
 			device.sendFeatureReport(data);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new BlinkstickException("Unable to set colors: " + colorData, e);
 		}
 	}
 
 	@Override
-	public void setMode(Mode mode) {
+	public void setMode(Mode mode) throws BlinkstickException {
 		if (getMode() != mode)
 			try {
 				device.sendFeatureReport(new byte[]{ModeReportId.value(), mode.asByte()});
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+                throw new BlinkstickException("Unable to set mode: " + mode, e);
 			}
 	}
 
 	@Override
-	public Mode getMode() {
+	public Mode getMode() throws BlinkstickException {
 		byte[] data = new byte[2];
 		data[0] = ModeReportId.value();
 
@@ -341,7 +341,7 @@ public class CodemindersApiBlinkStick implements BlinkStick {
 				return Mode.fromByte(data[1]);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new BlinkstickException("Unable to get mode: " + e);
 		}
 
 		return Unknown;
