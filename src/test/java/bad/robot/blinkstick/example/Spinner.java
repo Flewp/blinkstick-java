@@ -1,6 +1,7 @@
 package bad.robot.blinkstick.example;
 
 import bad.robot.blinkstick.BlinkStick;
+import bad.robot.blinkstick.BlinkstickException;
 import bad.robot.blinkstick.Color;
 
 import java.util.stream.IntStream;
@@ -26,9 +27,13 @@ public class Spinner {
 	}
 
 	private static void onAndOffAgain(BlinkStick blinkStick, Color color, int index) {
-		blinkStick.setIndexedColor(index, color);
-		Sleep.sleep(100);
-		blinkStick.setIndexedColor(index, Black);
+		try {
+			blinkStick.setIndexedColor(index, color);
+			Sleep.sleep(100);
+			blinkStick.setIndexedColor(index, Black);
+		} catch (BlinkstickException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

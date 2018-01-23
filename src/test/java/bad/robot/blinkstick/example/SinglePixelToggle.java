@@ -1,5 +1,6 @@
 package bad.robot.blinkstick.example;
 
+import bad.robot.blinkstick.BlinkstickException;
 import bad.robot.blinkstick.Colors;
 import bad.robot.blinkstick.Usb;
 
@@ -10,12 +11,16 @@ public class SinglePixelToggle {
 
 	public static void main(String... args) {
 		Usb.findFirstBlinkStick().map(stick -> {
-			stick.setMode(Ws2812);
-			for (int i = 0; i < 8; i++) {
-				stick.setIndexedColor(i, Colors.Green);
-				Sleep.sleep(200);
-				stick.setIndexedColor(i, Black);
-				Sleep.sleep(200);
+			try {
+				stick.setMode(Ws2812);
+				for (int i = 0; i < 8; i++) {
+					stick.setIndexedColor(i, Colors.Green);
+					Sleep.sleep(200);
+					stick.setIndexedColor(i, Black);
+					Sleep.sleep(200);
+				}
+			} catch (BlinkstickException e) {
+				e.printStackTrace();
 			}
 			return null;
 		});
