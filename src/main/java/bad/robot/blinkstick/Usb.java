@@ -91,13 +91,13 @@ public class Usb {
 				new NullPointerException("Failed to open USB device, the native open() method returned null. Could be a OS/driver issue, check your library path. Otherwise, I have no idea.")
 			);
 
-			BlinkStick blinkStick = rateLimit ?
+			return rateLimit ?
 				new RateLimitedBlinkStick(new CodemindersApiBlinkStick(device)).createProxy() :
 				new CodemindersApiBlinkStick(device);
 
-			return blinkStick;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
+			return null;
 		}
 	}
 
